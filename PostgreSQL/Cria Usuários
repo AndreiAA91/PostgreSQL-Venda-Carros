@@ -1,0 +1,82 @@
+--Cria Usuários
+--Cria uma role do tipo grupo com nome administrador
+create role administrador with --O comando with adiciona preferencias as roles, sem ele é criada uma role padrão
+	--Condição de super usuario, permite que esse grupo consiga interagir totalmente com o banco de dados
+	superuser
+	--Condição de criar banco de dados
+	createdb
+	--Condição de criar novas roles
+	createrole;
+--Cria uma role do tipo grupo padrão (o padrão nega as condições)
+create role gerente;
+--Cria uma role do tipo grupo padrão (o padrão nega as condições)
+create role vendedor;
+
+--Revoga o uso da função adiciona_cliente para todos os grupo e usuarios do public - nome da função - tipo das colunas - local
+revoke all on function adiciona_cliente(numeric, varchar, varchar, numeric) from public;
+--Revoga o uso da função adiciona_carro para todos os grupo e usuarios do public - nome da função - tipo das colunas - local
+revoke all on function adiciona_carro(numeric, varchar, varchar, varchar, numeric, numeric) from public;
+--Revoga o uso da função adiciona_compra para todos os grupo e usuarios do public - nome da função - tipo das colunas - local
+revoke all on function adiciona_compra(numeric, numeric) from public;
+revoke all on function remove_cliente(numeric) from public;
+revoke all on function remove_carro(numeric) from public;
+revoke all on function remove_compra (numeric) from public;
+
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao administrador de usar select, insert, update, delete nas tabelas carros, clientes, compra
+grant select, insert, update, delete on carros, clientes, compra to administrador with grant option;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao administrador a usar função adiciona_cliente
+grant execute on function adiciona_cliente(numeric, varchar, varchar, numeric) to administrador;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao administrador a usar função adiciona_carro
+grant execute on function adiciona_carro(numeric, varchar, varchar, varchar, numeric, numeric) to administrador;
+grant execute on function adiciona_compra(numeric, numeric) to administrador;
+grant execute on function remove_cliente(numeric) to administrador;
+grant execute on function remove_carro(numeric) to administrador;
+grant execute on function remove_compra (numeric) to administrador;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao administrador a usar as views tabela_carros, tabela_clientes e tabela_compra
+grant select on tabela_carros, tabela_clientes, tabela_compra to administrador;
+
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao gerente a usar função adiciona_cliente
+grant execute on function adiciona_cliente(numeric, varchar, varchar, numeric) to gerente;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao gerente a usar função adiciona_carro
+grant execute on function adiciona_carro(numeric, varchar, varchar, varchar, numeric, numeric) to gerente;
+grant execute on function adiciona_compra(numeric, numeric) to gerente;
+grant execute on function remove_cliente(numeric) to gerente;
+grant execute on function remove_carro(numeric) to gerente;
+grant execute on function remove_compra (numeric) to gerente;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao gerente a usar as views tabela_carros, tabela_clientes e tabela_compra
+grant select on tabela_carros, tabela_clientes, tabela_compra to gerente;
+
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao vendedor a usar função adiciona_cliente
+grant execute on function adiciona_cliente(numeric, varchar, varchar, numeric) to vendedor;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao vendedor a usar função adiciona_carro
+grant execute on function adiciona_carro(numeric, varchar, varchar, varchar, numeric, numeric) to vendedor;
+grant execute on function adiciona_compra(numeric, numeric) to vendedor;
+--Grant é o codigo usado para dar permissões para os usuarios - permissão ao vendedor a usar as views tabela_carros, tabela_clientes e tabela_compra
+grant select on tabela_carros, tabela_clientes, tabela_compra to vendedor;
+
+--Cria uma role do tipo usuario com nome francisco
+create role francisco with
+	--permite que o usuario se logue no banco
+	login
+	--atribui uma senha ao usuario
+	password '123'
+	--coloca o usuario no grupo dos administradores (atribuir um usuario ao grupo transfere as permissões do grupo ao usuario) 
+	in role administrador;
+
+--Cria uma role do tipo usuario com nome patricia
+create role patricia with
+	--permite que o usuario se logue no banco
+	login
+	--atribui uma senha ao usuario
+	password '123'
+	--coloca o usuario no grupo dos gerente (atribuir um usuario ao grupo transfere as permissões do grupo ao usuario) 
+	in role gerente;
+
+--Cria uma role do tipo usuario com nome fernanda
+create role fernanda with
+	--permite que o usuario se logue no banco
+	login
+	--atribui uma senha ao usuario
+	password '123'
+	--coloca o usuario no grupo dos vendedor (atribuir um usuario ao grupo transfere as permissões do grupo ao usuario) 
+	in role vendedor;

@@ -1,0 +1,79 @@
+--Manipulação do banco
+--Seleciona a tabela clientes
+select * from clientes;
+
+--Chama a função adiciona_cliente (função e seus criterios)
+select adiciona_cliente (126674895, 'Tadeu Shimit', 'tadeu.shimit@teste.com', 11987874545);
+--Chama a função adiciona_cliente (função e seus criterios)
+select adiciona_cliente (126674444, 'Augusto Fris', 'augusto.fris@teste.com', 11978451236);
+select adiciona_cliente (126674444, 'Augusto Fris', 'augusto.fris@teste.com', 11978451236);
+--Deleta informações da tabela cliente no criterio informado
+delete from clientes where rg = 126674444;
+--Deleta informações da tabela cliente no criterio informado
+delete from clientes where rg = 126674895;
+
+--Seleciona a tabela carros
+select * from carros;
+
+--Chama a função adiciona_carro (função e seus criterios)
+select adiciona_carro (4001, 'Inova', 'Marco 1', '1 porta - completo', 2025, 89000.56);
+--Chama a função adiciona_carro (função e seus criterios)
+select adiciona_carro (4002, 'Inova', 'Marco 2', '2 portas - completo', 2025, 99000.30);
+select adiciona_carro (4002, 'Inova', 'Marco 2', '2 portas - completo', 2025, 99000.30);
+--Deleta informações da tabela carros no criterio informado
+delete from carros where registro = 4001;
+
+--Seleciona a tabela compra
+select * from compra;
+
+--Chama a função adiciona_compra (função e seus criterios)
+select adiciona_compra (125468879, 1003);
+--Chama a função adiciona_compra (função e seus criterios)
+select adiciona_compra (157896314, 4001);
+select adiciona_compra (001122334, 4002);
+select adiciona_compra (157896314, 4004);
+select adiciona_compra (001122334, 4004);
+
+select * from clientes;
+
+--Chama a função remove_cliente (função e seus criterios)
+select remove_cliente (126674895);
+select remove_cliente (126674444);
+select remove_cliente (126674895);
+
+select * from carros;
+
+--Chama a função remove_carro (função e seus criterios)
+select remove_carro (4002);
+select remove_carro (4001);
+select remove_carro (4002);
+
+select * from compra;
+
+--Chama a função remove_compra (função e seus criterios)
+select remove_compra (157896314);
+select remove_compra (125468879);
+select remove_compra (157896314);
+
+--Chama a view tabela_compra por completa
+select * from tabela_compra;
+--Chama a view tabela_carros por completa
+select * from tabela_carros;
+--Chama a view tabela_compra por completa
+select * from tabela_compra;
+
+--Chama uma relação entre as tabelas compra e carros
+select compra.id_compra, carros.marca, carros.modelo, compra.data_compra, carros.valor
+--Comando join de relação entre duas tabelas, onde a base se encontra ao lado do from e o relacionado depois do join
+--o que se encontra apos o on são as colunas que servirão de indice da relação, não precisam aparecer na busca porem devem ser primary key e foreign key
+from compra join carros on compra.registro = carros.registro order by compra.id_compra asc;--Order by é um comando de ordenação (asc ordem crescente)
+
+--Chama uma relação entre as tabelas compra e clientes
+select compra.id_compra, clientes.nome, compra.data_compra
+from compra join clientes on compra.rg = clientes.rg order by compra.id_compra asc;
+
+--Chama uma relação entre as tabelas compra, clientes e carros
+select compra.id_compra, clientes.nome, carros.marca, carros.modelo, compra.data_compra, carros.valor
+from compra join carros on compra.registro = carros.registro
+			join clientes on compra.rg = clientes.rg
+			order by compra.id_compra asc;

@@ -1,0 +1,155 @@
+--Funções e views
+--Cria uma função que vai adicionar clientes a tabela cliente - nome da função - campos que serão usados na função e seus tipos (obrigatoriamente igual as colunas em que serão inseridas)
+create or replace function adiciona_cliente(rg_cliente numeric(9), nome_cliente varchar(40), email_cliente varchar(30), telefone_cliente numeric(11)) -- or replace - obriga a igualdade de tipos
+--Define o tipo de retorno da função - tipos void = retorno sem mensagem
+returns void
+--A partir deste ponto é colocado o corpo da função, o que ela fará
+as $$
+	--Comando de controle de alterações - caso ocorra algum erro dentro do begin, as alterações serão desfeitas
+	begin
+		--Parametro de busca, vai procurar dentro da tabela clientes na coluna rg o argumento colocado no campo rg_cliente
+		perform * from clientes where rg = rg_cliente; --where é básicamente um filtro
+		--Condição SE de verdadeiro ou falso (Vai condicionar a uma condição um caminho de codigo) - caso não encontre o argumento buscado acima
+		if not found then
+			--Insere informações na tabela cliente
+			insert into clientes
+			--Valores que serão acrescentados (argumentos colocados na função)
+			values (rg_cliente, nome_cliente, email_cliente, telefone_cliente);
+			--Comando que vai retornar uma mensagem ao usuario
+			raise info 'Cliente cadastrado com sucesso!';
+		--Condição para não, caso encontre o argumento rg_cliente
+		else
+			--Comando que vai retornar uma mensagem ao usuario
+			raise exception 'Cliente já cadastrado!';
+		--Termino da função de condição SE (obrigatoria para a função)
+		end if;
+	--Final do comando begin (obrigatoria para a função)
+	end;
+--Final do corpo da função (obrigatoria para a função)
+$$
+--Linguagem utilizada na função
+language plpgsql
+--Tipo de segurança no que tange a utilização da função (para casos definer, qualquer um pode usar essa função)
+security definer;
+
+
+create or replace function adiciona_carro (registro_carro numeric, marca_carro varchar, modelo_carro varchar, especificacao_carro varchar, ano_carro numeric, valor_carro numeric)
+returns void
+as $$
+	begin
+		perform * from carros where registro = registro_carro;
+		--Condição SE de verdadeiro ou falso (Vai condicionar a uma condição um caminho de codigo) - caso encontre o argumento buscado acima
+		if found then
+			raise exception 'Carro já cadastrado';
+		else
+			insert into carros
+			values (registro_carro, marca_carro, modelo_carro, especificacao_carro, ano_carro, valor_carro);
+			raise notice 'Carro cadastrado com sucesso!';
+		end if;
+	end;
+$$
+language plpgsql
+security definer;
+
+create or replace function adiciona_compra	(rg_compra numeric(9), registro_compra numeric(5))
+returns void
+as $$
+	begin
+		perform * from clientes where rg = rg_compra;
+		if found then
+			perform * from carros where registro = registro_compra;
+			if found then
+				insert into compra
+				values (default, rg_compra, registro_compra, default);
+				raise notice 'Compra realizada com sucesso!';
+			else
+				raise exception 'Registro não localizado';
+			end if;
+		else
+			raise exception 'Cliente não localizado';
+		end if;
+	end;
+$$
+language plpgsql
+security definer;
+
+--Cria uma função que vai remover clientes da tabela cliente - nome da função - campos que serão usados na função e seus tipos (obrigatoriamente igual as colunas que serão apagadas)
+create or replace function remove_cliente(rg_cliente numeric)
+returns void
+as $$
+	begin
+		perform * from clientes where rg = rg_cliente;
+		if found then
+			--Deleta as linhas da tabela clientes que tenham o campo rg igual ao campo rg_cliente
+			delete from clientes where rg = rg_cliente;
+			raise info 'Cliente removido com sucesso!';
+		else
+			raise exception 'Cliente não encontrado!';
+		end if;
+	end;
+$$
+language plpgsql
+security definer;
+
+create or replace function remove_carro (registro_carro numeric)
+returns void
+as $$
+	begin
+		perform * from carros where registro = registro_carro;
+		if found then
+			delete from carros where registro = registro_carro;
+			raise info 'Carro removido com sucesso!';
+		else
+			raise exception 'Carro não encontrado!';
+		end if;
+	end;
+$$
+language plpgsql
+security definer;
+
+create or replace function remove_compra (rg_compra numeric)
+returns void
+as $$
+	begin
+		perform * from compra where rg = rg_compra;
+		if found then
+			delete from compra where rg = rg_compra;
+			raise info 'Compra removida com sucesso!';
+		else
+			raise exception 'Compra não encontrado!';
+		end if;
+	end;
+$$
+language plpgsql
+security definer;
+
+--Cria uma view (uma tabela espelho que vai possuir todos os atributos desejados da tabela raiz, é possivel ter mais de uma tabela raiz) - nome da view - as colunas desejadas da tabela carros (não precisa especificar os tipos)
+create or replace view tabela_carros as (select registro, marca, modelo, especificacao, ano, valor from carros);
+--Seleciona a view criada
+select * from tabela_carros;
+
+--Cria uma view (uma tabela espelho que vai possuir todos os atributos desejados da tabela raiz, é possivel ter mais de uma tabela raiz) - nome da view - todas as colunas da tabela clientes (não precisa especificar os tipos)
+create or replace view tabela_clientes as (select * from clientes);
+--Seleciona a view criada
+select * from tabela_clientes;
+
+select compra.id_compra, carros.marca, carros.modelo, compra.data_compra, carros.valor
+from compra join carros on compra.registro = carros.registro order by compra.id_compra asc;
+
+select compra.id_compra, clientes.nome, compra.data_compra
+from compra join clientes on compra.rg = clientes.rg order by compra.id_compra asc;
+
+select compra.id_compra, clientes.nome, carros.marca, carros.modelo, compra.data_compra, carros.valor
+from compra join carros on compra.registro = carros.registro
+			join clientes on compra.rg = clientes.rg
+			order by compra.id_compra asc;
+
+--Cria uma view (uma tabela espelho que vai possuir todos os atributos desejados da tabela raiz, é possivel ter mais de uma tabela raiz) - nome da view - as colunas desejadas das tabelas compras, clientes e carros (não precisa especificar os tipos)
+create or replace view tabela_compra as (select compra.id_compra, clientes.nome, carros.marca, carros.modelo, compra.data_compra, carros.valor
+	--Local de busca - a função Join vai fazer a relação das 3 tabelas para consolidar uma unica view - o from vai definer a tabela base de relação e o que vem depois do join vai definir o relacionado
+	from compra join carros on compra.registro = carros.registro --As colunas usadas para a relação não precisam aparecer na view, porem, obrigatoriamente precisar ser as primary keys e foreign keys das tabelas relacionadas
+				join clientes on compra.rg = clientes.rg
+				--Este comando ordena as infomrçãoes pela coluna compra.id_compra de maneira acendente (desc é decrecente)
+				order by compra.id_compra asc);
+--Seleciona a view criada
+select * from tabela_compra;
